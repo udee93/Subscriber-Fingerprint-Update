@@ -1,0 +1,5 @@
+{
+  "name": "Telecom EKYC Portal",
+  "description": "A secure portal for telecom agents to validate customer identity via Smart Card and Biometrics for transaction processing.",
+  "requestFramePermissions": []
+}
