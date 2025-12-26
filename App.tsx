@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { EkycStep } from './types';
 import EkycWizard from './components/EkycWizard';
-import { CheckCircle2, RefreshCcw, PackageCheck } from 'lucide-react';
+import { RefreshCcw, PackageCheck, XCircle, LogOut } from 'lucide-react';
 
 const App: React.FC = () => {
   // --- State ---
-  const [view, setView] = useState<'EKYC' | 'SUCCESS'>('EKYC');
+  const [view, setView] = useState<'EKYC' | 'SUCCESS' | 'FAILED'>('EKYC');
   const [refId, setRefId] = useState<string | null>(null);
 
   // --- Handlers ---
-  const handleComplete = (submissionRef: string) => {
-    setRefId(submissionRef);
-    setView('SUCCESS');
+  const handleResult = (success: boolean, submissionRef?: string) => {
+    if (success && submissionRef) {
+      setRefId(submissionRef);
+      setView('SUCCESS');
+    } else {
+      setView('FAILED');
+    }
   };
 
   const resetApp = () => {
@@ -44,16 +48,45 @@ const App: React.FC = () => {
     </div>
   );
 
+  const renderFailed = () => (
+    <div className="max-w-md mx-auto mt-12 bg-white p-10 rounded-3xl shadow-2xl border border-red-100 text-center animate-in zoom-in duration-500">
+      <div className="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
+        <XCircle className="w-12 h-12" />
+      </div>
+      <h2 className="text-3xl font-black text-gray-900 mb-3 tracking-tight">Order Failed</h2>
+      <p className="text-gray-500 mb-10 leading-relaxed">
+        We encountered a system timeout during activation. The request could not be completed at this time.
+      </p>
+      
+      <div className="flex flex-col gap-4">
+        <button
+          onClick={resetApp}
+          className="w-full py-4 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg hover:shadow-red-200 flex items-center justify-center gap-3"
+        >
+          <RefreshCcw className="w-5 h-5" /> Try Again
+        </button>
+        
+        <button
+          onClick={resetApp}
+          className="w-full py-4 bg-white text-gray-600 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-3"
+        >
+          <LogOut className="w-5 h-5 text-gray-400" /> Exit and Try Another Transaction
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50/50 flex flex-col selection:bg-blue-100 selection:text-blue-900">
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {view === 'EKYC' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <EkycWizard onComplete={handleComplete} />
+            <EkycWizard onResult={handleResult} />
           </div>
         )}
 
         {view === 'SUCCESS' && renderSuccess()}
+        {view === 'FAILED' && renderFailed()}
       </main>
 
       <footer className="bg-white border-t border-gray-100 mt-auto">

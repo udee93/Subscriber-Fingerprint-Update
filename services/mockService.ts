@@ -43,7 +43,15 @@ export const simulateFingerprintScan = async (shouldFail = false): Promise<boole
   return true;
 };
 
-export const submitEkycRequest = async (transactionIds: string[], smartCardData: SmartCardData): Promise<string> => {
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  return `REQ-${Math.floor(Math.random() * 100000)}`;
+export const submitEkycRequest = async (transactionIds: string[], smartCardData: SmartCardData, shouldFail = false): Promise<string> => {
+  // Wait for 10 seconds as requested
+  await new Promise(resolve => setTimeout(resolve, 10000));
+  
+  if (shouldFail) {
+    // Simulate a failure by throwing an error
+    throw new Error("SYSTEM_TIMEOUT_OR_VALIDATION_FAILURE");
+  }
+
+  // Return a mock reference ID for success
+  return 'ACT-' + Math.random().toString(36).substr(2, 9).toUpperCase();
 };

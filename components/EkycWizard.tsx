@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { SmartCardData, EkycStep } from '../types';
 import { simulateSmartCardRead, simulateFingerprintScan, submitEkycRequest } from '../services/mockService';
-import { CreditCard, Fingerprint, Loader2, CheckCircle, AlertCircle, Smartphone, Send } from 'lucide-react';
+import { CreditCard, Fingerprint, Loader2, CheckCircle, AlertCircle, Smartphone, Send, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 interface EkycWizardProps {
-  onComplete: (refId: string) => void;
+  onResult: (success: boolean, refId?: string) => void;
 }
 
-const EkycWizard: React.FC<EkycWizardProps> = ({ onComplete }) => {
+const EkycWizard: React.FC<EkycWizardProps> = ({ onResult }) => {
   const [step, setStep] = useState<EkycStep>(EkycStep.READ_CARD);
   const [isLoading, setIsLoading] = useState(false);
   const [cardData, setCardData] = useState<SmartCardData | null>(null);
   const [msisdn, setMsisdn] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [intendedOutcome, setIntendedOutcome] = useState<'success' | 'failure'>('success');
 
   const handleReadCard = async () => {
     setIsLoading(true);
@@ -47,10 +48,11 @@ const EkycWizard: React.FC<EkycWizardProps> = ({ onComplete }) => {
     
     setIsLoading(true);
     try {
-      const refId = await submitEkycRequest([], cardData);
-      onComplete(refId);
+      const refId = await submitEkycRequest([], cardData, intendedOutcome === 'failure');
+      onResult(true, refId);
     } catch (e) {
-      setError("Order submission failed. Please check connectivity.");
+      // Transition to failed screen on error
+      onResult(false);
     } finally {
       setIsLoading(false);
     }
@@ -197,33 +199,22 @@ const EkycWizard: React.FC<EkycWizardProps> = ({ onComplete }) => {
                   <span className="text-xl font-extrabold text-slate-900 tracking-tight">{cardData.fullName}</span>
                 </div>
 
-                {/* Nationality and Gender Row */}
-                <div className="grid grid-cols-2 gap-x-8">
-                  <div className="flex flex-col">
-                    <span className="text-[13px] font-medium text-slate-400 uppercase tracking-tight">NATIONALITY</span>
-                    <span className="text-lg font-bold text-slate-800">{cardData.nationality}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[13px] font-medium text-slate-400 uppercase tracking-tight">GENDER</span>
-                    <span className="text-lg font-bold text-slate-800">{cardData.gender}</span>
-                  </div>
-                </div>
-
-                {/* CPR and Expiry Row */}
+                {/* CPR and Nationality Row */}
                 <div className="grid grid-cols-2 gap-x-8">
                   <div className="flex flex-col">
                     <span className="text-[13px] font-medium text-slate-400 uppercase tracking-tight">CPR NUMBER</span>
                     <span className="text-lg font-bold text-slate-800 tracking-wider font-mono">{cardData.cprNumber}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[13px] font-medium text-slate-400 uppercase tracking-tight">EXPIRY</span>
-                    <span className="text-lg font-bold text-emerald-600">{cardData.expiryDate}</span>
+                    <span className="text-[13px] font-medium text-slate-400 uppercase tracking-tight">NATIONALITY</span>
+                    <span className="text-lg font-bold text-slate-800">{cardData.nationality}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="max-w-md mx-auto w-full space-y-4">
+            <div className="max-w-md mx-auto w-full space-y-8">
+              {/* MSISDN Input */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Service MSISDN (Mobile Number)</label>
                 <div className="relative">
@@ -239,27 +230,60 @@ const EkycWizard: React.FC<EkycWizardProps> = ({ onComplete }) => {
                     className="block w-full pl-11 pr-3 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 placeholder-gray-400 text-xl font-mono tracking-[0.2em] bg-gray-50/50"
                   />
                 </div>
-                <p className="text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">Entry required to proceed</p>
+              </div>
+
+              {/* Simulation Outcome Selector */}
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-gray-700">Select Test Outcome</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setIntendedOutcome('success')}
+                    className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all font-bold ${
+                      intendedOutcome === 'success' 
+                      ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
+                      : 'border-gray-100 bg-white text-gray-500 hover:border-gray-200'
+                    }`}
+                  >
+                    <ThumbsUp className={`w-5 h-5 ${intendedOutcome === 'success' ? 'text-green-600' : ''}`} />
+                    Success
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIntendedOutcome('failure')}
+                    className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all font-bold ${
+                      intendedOutcome === 'failure' 
+                      ? 'border-red-500 bg-red-50 text-red-700 shadow-md' 
+                      : 'border-gray-100 bg-white text-gray-500 hover:border-gray-200'
+                    }`}
+                  >
+                    <ThumbsDown className={`w-5 h-5 ${intendedOutcome === 'failure' ? 'text-red-600' : ''}`} />
+                    Failure
+                  </button>
+                </div>
               </div>
             </div>
 
             <div className="pt-6 border-t border-gray-100 flex gap-4">
                <button 
                 type="button"
+                disabled={isLoading}
                 onClick={() => setStep(EkycStep.VERIFY_BIOMETRIC)}
-                className="px-6 py-4 text-gray-500 font-bold hover:text-gray-900 transition-colors"
+                className="px-6 py-4 text-gray-500 font-bold hover:text-gray-900 transition-colors disabled:opacity-50"
               >
                 Back
               </button>
               <button 
                 type="submit"
                 disabled={isLoading || !msisdn}
-                className="flex-grow px-8 py-4 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-xl transition-all flex items-center justify-center gap-3 disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
+                className={`flex-grow px-8 py-4 rounded-xl text-white font-bold shadow-xl transition-all flex items-center justify-center gap-3 disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none ${
+                  intendedOutcome === 'success' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'
+                }`}
               >
                 {isLoading ? (
                   <><Loader2 className="w-5 h-5 animate-spin" /> Processing Order...</>
                 ) : (
-                  <><Send className="w-5 h-5" /> Activate Service</>
+                  <><Send className="w-5 h-5" /> Submit Order</>
                 )}
               </button>
             </div>
