@@ -4,48 +4,18 @@ import { SmartCardData, Transaction } from '../types';
 const MOCK_TRANSACTIONS: Transaction[] = [
   {
     id: 'TRX-987261',
-    cprNumber: '890112345',
-    customerName: 'Ahmed Al-Farsi',
+    cprNumber: '930658450',
+    customerName: 'UDIT PANT',
     serviceType: 'New Postpaid Line',
     status: 'PENDING',
     date: '2023-10-25',
     amount: '15.000 BHD'
-  },
-  {
-    id: 'TRX-987262',
-    cprNumber: '890112345',
-    customerName: 'Ahmed Al-Farsi',
-    serviceType: 'Fiber Internet Upgrade',
-    status: 'PENDING',
-    date: '2023-10-26',
-    amount: '5.000 BHD'
-  },
-  {
-    id: 'TRX-112233',
-    cprNumber: '950554321',
-    customerName: 'Sarah John',
-    serviceType: 'Prepaid Renewal',
-    status: 'PENDING',
-    date: '2023-10-27',
-    amount: '7.500 BHD'
-  },
-  {
-    id: 'TRX-554433',
-    cprNumber: '780998877',
-    customerName: 'Mohamed Ebrahim',
-    serviceType: 'Device Installment',
-    status: 'PENDING',
-    date: '2023-10-24',
-    amount: '45.000 BHD'
   }
 ];
 
 export const searchTransactions = async (query: string, type: 'TRANSACTION_ID' | 'CPR_NUMBER'): Promise<Transaction[]> => {
-  // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 800));
-
   if (!query) return [];
-
   if (type === 'TRANSACTION_ID') {
     return MOCK_TRANSACTIONS.filter(t => t.id.toLowerCase() === query.toLowerCase());
   } else {
@@ -54,22 +24,21 @@ export const searchTransactions = async (query: string, type: 'TRANSACTION_ID' |
 };
 
 export const simulateSmartCardRead = async (): Promise<SmartCardData> => {
-  await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate hardware read time
+  await new Promise(resolve => setTimeout(resolve, 2000));
   
-  // Return random mock data or consistent data based on flow
   return {
-    fullName: 'Ahmed Mohammed Al-Farsi',
-    cprNumber: '890112345',
-    dateOfBirth: '1989-01-12',
-    expiryDate: '2028-05-20',
-    gender: 'Male',
-    nationality: 'Bahraini',
-    photoUrl: 'https://picsum.photos/200'
+    fullName: 'UDIT PANT',
+    cprNumber: '930658450',
+    dateOfBirth: '1993-06-05',
+    expiryDate: '18/10/2027',
+    gender: 'M',
+    nationality: '423',
+    photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=256&h=256&auto=format&fit=crop'
   };
 };
 
 export const simulateFingerprintScan = async (shouldFail = false): Promise<boolean> => {
-  await new Promise(resolve => setTimeout(resolve, 2500)); // Simulate scanning and matching
+  await new Promise(resolve => setTimeout(resolve, 2500));
   if (shouldFail) throw new Error("Fingerprint mismatch");
   return true;
 };

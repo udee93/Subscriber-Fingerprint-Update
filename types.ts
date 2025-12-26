@@ -1,18 +1,3 @@
-export enum SearchType {
-  TRANSACTION_ID = 'TRANSACTION_ID',
-  CPR_NUMBER = 'CPR_NUMBER'
-}
-
-export interface Transaction {
-  id: string;
-  cprNumber: string;
-  customerName: string;
-  serviceType: string;
-  status: 'PENDING' | 'COMPLETED' | 'FAILED';
-  date: string;
-  amount: string;
-}
-
 export interface SmartCardData {
   fullName: string;
   cprNumber: string;
@@ -23,13 +8,25 @@ export interface SmartCardData {
   photoUrl: string;
 }
 
+// Fix: Define Transaction interface to resolve import errors in mockService.ts and TransactionList.tsx
+export interface Transaction {
+  id: string;
+  cprNumber: string;
+  customerName: string;
+  serviceType: string;
+  status: string;
+  date: string;
+  amount: string;
+}
+
+export interface OrderData {
+  msisdn: string;
+  cardData: SmartCardData;
+}
+
 export enum EkycStep {
-  IDLE = 'IDLE',
-  READING_CARD = 'READING_CARD',
-  CARD_READ_SUCCESS = 'CARD_READ_SUCCESS',
-  SCANNING_FINGERPRINT = 'SCANNING_FINGERPRINT',
-  FINGERPRINT_VERIFIED = 'FINGERPRINT_VERIFIED',
-  SUBMITTING = 'SUBMITTING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED'
+  READ_CARD = 'READ_CARD',
+  VERIFY_BIOMETRIC = 'VERIFY_BIOMETRIC',
+  ORDER_DETAILS = 'ORDER_DETAILS',
+  SUCCESS = 'SUCCESS'
 }
